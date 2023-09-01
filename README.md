@@ -1,1 +1,1 @@
-Archive of The Infected Voice virus e-zine
+Archive of "The Infected Voice" virus e-zine
