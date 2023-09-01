@@ -1,0 +1,219 @@
+
+      ▄▄                  █
+     ▀▀▀  Virus Magazine  █ Box 176, Kiev 210, Ukraine      IV  1997
+     ▀██ ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀ █ ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀ ▀ ▀▀▀▀▐▀▀▀  █▀▀▀▀▀▀█
+      ▐█ █▀▄ █▀▀ ▄▀▀ ▄▀▀ ▄█▄ ▄▀▀ █▀█    ▌ █ ▄▀█ █ ▄▀▀ █▄▄   █ ▀▀▀█ █
+       █ █ █ █▀  █▀  █    █  █▀  █ █    █ █ █ █ █ █   █     █ ▄▄▄█ █
+       █ ▐ ▐ ▐   ▐▄▄ ▐▄▄  ▐  ▐▄▄ ▐▄▀     ▀█ ▀▄█ ▐ ▐▄▄ ▐▄▄▄  █ █▄▄▄ █
+       ▐ ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄ ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄  █▄▄▄▄▄▄█
+          (C) Copyright, 1994-97, by STEALTH group WorldWide, unLtd.
+                              sgww@hotmail.com
+            Digest of IV 8 - 11 russian, including Moscow issues
+
+                     ┌─■[       Authors      ]■─┐
+                     │                          │
+                     │          LovinGOD        │
+                     │                          │
+                     │         Dirty Nazi       │
+                     │                          │
+                     │      Eternal Maverick    │
+                     │                          │
+                     │          Reminder        │
+                     │                          │
+                     │    Stainless Steel Rat   │
+                     │                          │
+                     │         Mr.Strange       │
+                     │                          │
+                     │         T0RmenT0R        │
+                     │                          │
+                     │         Supervisor       │
+                     │                          │
+                     │         IntMaster        │
+                     │                          │
+                     │        Int O`Dream       │
+                     │                          │
+                     └──────────────────────────┘
+
+
+  ───────────────────────■[ C O N T E N T S ]■────────────────────────
+
+  IV_2E
+  └─┼─┘
+    ├──── INTRO.IV2 - intro to our second english issue
+    │
+    ├──── CONTENTS.IV2 - this file
+    │
+    ├──── IV_2E.EXE - viewer for Infected Voice
+    │
+    ├──── [ SGWWINFO ] - club info
+    │         └┼┘
+    │          │
+    │          ├───── CONTACT.US - how to contact us
+    │          │
+    │          │
+    │          ├───── COLLECT.SG - sorted part of our virii collection
+    │          │
+    │          │
+    │          ├───── LOVINGOD.PGP - LovinGOD's PGP key
+    │          │
+    │          │
+    │          ├───── DNAZI.PGP - Dirty Nazi's PGP key
+    │          │
+    │          │
+    │          ├───── JOINUS.IV2 - Join us! Together we'll survive!
+    │          │
+    │          │
+    │          └───── APPLIC.SG - SGWW application to join
+    │
+    │
+    │
+    ├──── [ ART&TULZ ] - tools and researches
+    │          └┼┘
+    │           │
+    │           ├───── [ 1WAYPACK ]
+    │           │          └┼┘
+    │           │           │
+    │           │           ├─── PACK_DOX.IV2 - one way pack. Unpack
+    │           │           │                   and halt your PC!
+    │           │           │                   (c) SSR
+    │           │           │
+    │           │           └─── *.COM - see PACK_DOX.IV2 for details
+    │           │
+    │           ├───── [ MEMORY ]
+    │           │         └┼┘
+    │           │          │
+    │           │          └─── MEMORY.IV2 - resident viruses
+    │           │                            (c) MrStrange
+    │           │
+    │           ├───── [ NO_CURE ]
+    │           │          └┼┘
+    │           │           │
+    │           │           ├─── NO_CURE.IV2 - Incurability. (c) SSR
+    │           │           │
+    │           │           │
+    │           │           └─── *.ASM, *.COM - see NO_CURE.IV2 for
+    │           │                               details
+    │           │
+    │           │
+    │           ├───── [ OBJ ]
+    │           │        └┼┘
+    │           │         │
+    │           │         └─── OBJ.IV2 - OBJ file format (p) IntMaster
+    │           │
+    │           │
+    │           ├───── [ PNP_BIOS ]
+    │           │           └┼┘
+    │           │            │
+    │           │            └──── PNP_BIOS.IV2 - plug'n'play BIOS
+    │           │                  (c) T0RmenT0R & Supervisor
+    │           │
+    │           │
+    │           ├───── [ SIMBIOZ ]
+    │           │          └┼┘
+    │           │           │
+    │           │           └───── SIMBIOZ.IV2 - new way of infecting
+    │           │                                (c) Reminder
+    │           │
+    │           │
+    │           ├───── [ TOOSMALL ]
+    │           │          └┼┘
+    │           │           │
+    │           │           └─── TOOSMALL.IV2 - too small in memory
+    │           │                               (c) LovinGOD
+    │           │
+    │           │
+    │           ├───── [ WIN0TRAK ]
+    │           │          └┼┘
+    │           │           │
+    │           │           └─── WIN0TRAK.IV2 - writing sectors on
+    │           │                               track 0 under Win'95
+    │           │
+    │           │
+    │           ├───── [ EMSME ] - Eternal Maverick Small Mutation Engine
+    │           │         └┼┘
+    │           │          │
+    │           │          │
+    │           │          ├─── EMSME.DOC - readme
+    │           │          │
+    │           │          ├─── EMME.ASM - engine source code
+    │           │          │
+    │           │          └─── EMMEDEMO.ASM - engine demo
+    │           │
+    │           │
+    │           │
+    │           └───── [ TRACER ] - Interrupt tracer (c) LovinGOD
+    │                     └┼┘
+    │                      │
+    │                      │
+    │                      ├─── TR_INTRO.IV2 - readme
+    │                      │
+    │                      ├─── TRACER.IV2 - tracer
+    │                      │
+    │                      └─── DETECTOR.IV2 - trace detector
+    │
+    │
+    ├──── [ VIRII ] - virii source code
+    │        └┼┘
+    │         │
+    │         ├───── [ ACE ]
+    │         │        └┼┘
+    │         │         │
+    │         │         └─── ACE.ASM - the world's second OBJ infector
+    │         │                        (c) IntMaster
+    │         │
+    │         ├───── [ CRUNCHER ]
+    │         │          └┼┘
+    │         │           │
+    │         │           └─── CRUNCHER.ASM - old good one
+    │         │                               (c) Masud Khafir / TridenT
+    │         │                               disassembled and commented
+    │         │                               by IntMaster
+    │         │
+    │         │
+    │         ├───── [ SH ]
+    │         │        └┼┘
+    │         │         │
+    │         │         └─── SH.ASM - RE polymorph (c) Eternal Maverick
+    │         │
+    │         │
+    │         ├───── [ SIMBIOZ ]
+    │         │          └┼┘
+    │         │           │
+    │         │           └─── SIMBIOZ.ASM - example of simbioz method
+    │         │
+    │         │
+    │         ├───── [ IZVRAT ]
+    │         │         └┼┘
+    │         │          │
+    │         │          ├──── IZVRAT3B.PAS - RCE Stealth via Pascal
+    │         │          │                    (c) Dirty Nazi
+    │         │          │
+    │         │          ├──── INSTALL.PAS - virus installer
+    │         │          │
+    │         │          │
+    │         │          └──── IZVRAT3B.EXE - compiled virus
+    │         │
+    │         │
+    │         │
+    │         ├───── [ REM22 ]
+    │         │         └┼┘
+    │         │          │
+    │         │          └───── REM22.ASM - smallest ovewrite in the world
+    │         │                             (c) Reminder
+    │         │
+    │         │
+    │         └───── [ EXAMPLE ]
+    │                    └┼┘
+    │                     │
+    │                     └─── EXAMPLE.ASM - COM-nonresident/cur.dir.
+    │                                        example for beginners
+    │
+    │
+    └──── [ RELAX ] - virii effects demo (c) virmakers
+             └┼┘
+              │
+              │
+              ├─── VIRDEMO.IV2 - readme
+              │
+              │
+              └─── *.COM - virii effects demo (NO DANGER)

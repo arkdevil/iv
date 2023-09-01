@@ -1,0 +1,262 @@
+▄▄                   ▄
+▀▀▀ STEALTH GROUP WW █ Mail:   BOX 15, 125080 MOSCOW   ████████ █████████ █▀▀█
+▀██ ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀ █ ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀ ▀ ▀▀▀▀▐▀▀▀   ┌─┐┬ ┬┌─┤┬ ┬ ╥ ┬┐┌ █▄▄█
+ ▐█ █▀▄ █▀▀ ▄▀▀ ▄▀▀ ▄█▄ ▄▀▀ █▀█   ▌ █ ▄▀█ █ ▄▀▀ █▄▄    ├┬┘│ │└─┐├─┤   │└┤ ▄  █
+  █ █ █ █▀  █▀  █    █  █▀  █ █   █ █ █ █ █ █   █      ┴└─└─┘└─┘┴ ┴   ┴ ┴ ▀▀▀▀
+  █ ▐ ▐ ▐   ▐▄▄ ▐▄▄  ▐  ▐▄▄ ▐▄▀    ▀█ ▀▄█ ▐ ▐▄▄ ▐▄▄▄   ████  WINTER ' 96  ████
+  ▐ ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄ ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄   ███████████████████████
+
+;██████████████████████████████████████████████████████████████████████████
+;██								         ██
+;██			BOOTерброд         		(с) Saxon        ██
+;██								         ██
+;██████████████████████████████████████████████████████████████████████████
+  
+SEG_A		SEGMENT	BYTE PUBLIC
+		ASSUME	CS:SEG_A, DS:SEG_A
+		ORG	0h
+START:
+		JMP	SHORT CODE_START	
+		NOP
+;Таблица параметров загрузочного сектора...
+					;offset
+		db	'MSDOS5.0'	; 03h  │                               
+@@SectorSize    dw      200h	        ; 0bh  │размер сектора                                
+@@ClusterSize   db      8h	        ; 0dh  │число секторов в кластере                                
+@@ReservedSec   dw      1h	        ; 0eh  │число зарезервированных секторов                                
+@@FatsCopies    db      2h	        ; 10h  │число копий FAT                                
+@@RootSize      dw      200h	        ; 11h  │число записей в ROOT                                
+@@TotalSectors  dw      79d1h	        ; 13h  │всего секторов
+@@MediaByte     db      0f8h   	        ; 15h  │описатель накопителя                                
+@@FatSize       dw      10h	        ; 16h  │число секторов в FAT                                
+@@TrackSectors  dw      3fh	        ; 18h  │число секторов на дорожку                                
+@@Heads         dw      10h 	        ; 1ah  │число головок                                
+@@HiddenSectors dd      3fh	        ; 1ch  │число скрытых секторов                                
+@@BigTotalSects dd      0       	; 20h  │кол-во секторов в томе >32Mb
+@@DiskAddress   db      80h      	; 24h  │Х.З.                                
+@@WorkHead      db      0        	; 25h  │Х.З.                               
+@@ExtendedBPB   db      29h     	; 26h  │Х.З.                                
+@@SerialNumber  dd      262711dbh      	; 27h  │серийный номер                               
+@@DiskLabel     db      'NO NAME    '  	; 2bh  │                                
+@@TypeOfFAT     db      'FAT12   ' 	; 36h  │FAT12/FAT16                               
+
+ 
+CODE_START:		
+;Настроим регистры SS,ES=>0000 ,SP=>7C00
+;т.к. после во время загрузки BOOT грузится по адресу 0000:7C00
+;также скопируем таблицу параметров для дискет вместо начала кода и произведем
+;в ней некоторые уточнения...		
+		CLI				
+		XOR	AX,AX			
+		MOV	SS,AX
+		MOV	SP,7C00H
+		PUSH	SS
+		POP	ES
+		MOV	BX,1Eh*4
+		LDS	SI,DWORD PTR SS:[BX]	; Load base table for diskettes
+		PUSH	DS
+		PUSH	SI
+		PUSH	SS
+		PUSH	BX
+		MOV	DI,offset CODE_START+7c00h 
+		MOV	CX,0BH
+ 		CLD				
+		REP	MOVSB			
+		PUSH	ES
+		POP	DS			
+		MOV	BYTE PTR [DI-2],0FH  ;Время установки головки положим
+					     ;равным=15ms
+
+		MOV	CX,DS:[@@TrackSectors][7c00h]
+		MOV	[DI-7],CL	      ;зададим номер последнего сектора
+;теперь инициализируем модифицированную таблицу
+;для этого необходимо перехватить вектор 1EH и выполнить 
+;сброс диска...
+		MOV	[BX+2],AX
+		MOV	WORD PTR [BX],offset CODE_START+7c00h
+		STI				
+		INT	13H		; ax=0
+		JC	ERROR_
+;суть следущей операции заключается в том, что неплохо было бы знать
+;суммарный размер (в секторах) FAT+HiddenSectors+ReservedSectors(результат
+;будет занесен в двойное слово по адресу 0000:7C50) и FAT+...+ROOT 
+;(результат поместим в двойное слово по адресу 0000:7C49) ...		
+
+		XOR	AX,AX	
+		CMP	DS:[@@TotalSectors][7c00h],AX
+				 ; Общее число секторов = 0 ? (>32Mb)
+		JE	LOC_3  				    
+								; (<32m) 
+		MOV	CX,DS:[@@TotalSectors][7c00h]	
+		MOV	word ptr DS:[@@BigTotalSects][7c00h],CX	
+LOC_3:
+		MOV	AL,DS:[@@FatsCopies][7c00h]	
+		MUL	WORD PTR DS:[@@FatSize][7c00h]
+		ADD	AX,DS:[7c1ch]		; hidden sectors
+		ADC	DX,DS:[7c1eh]		; hidden sectors
+		ADD	AX,DS:[@@ReservedSec][7c00h]
+		ADC	DX,0
+		MOV	DS:[7c50h],AX		
+		MOV	DS:[7c52h],DX		
+		MOV	DS:[7c49h],AX		
+		MOV	DS:[7c4bh],DX
+		MOV	AX,20H
+		MUL	WORD PTR DS:[@@RootSize][7c00h]
+		MOV	BX,DS:[@@SectorSize][7c00h]	
+		ADD	AX,BX
+		DEC	AX
+		DIV	BX			
+		ADD	DS:[7c49h],AX		
+		ADC	WORD PTR DS:[7c4bh],0
+
+;Теперь считаем корневой каталог в память и просканируем его на предмет 
+;обнаружения в нем записей о IO.SYS и MSDOS.SYS...
+	
+		MOV	BX,500H		; куда считать ╓oo┬  0000:500
+		MOV	DX,DS:[7c52h]		
+ 		MOV	AX,DS:[7c50h]		
+		CALL	GET_PHYS_ADDR		
+		JC	ERROR_		
+		MOV	AL,1		; считать один сектор
+		CALL	READ_SEC			
+		JC	ERROR_
+		MOV	DI,BX
+		MOV	CX,0BH
+		MOV	SI,offset patt+7c00h
+		REPE	CMPSB			
+		JNZ	ERROR_			
+		LEA	DI,[BX+20H]		
+		MOV	CX,0BH
+		REPE	CMPSB			
+		JZ	LOC_6			
+
+;Сюда попадают в случае возникновения ошибки...
+ERROR_:
+		MOV	SI,OFFSET MESSAGE+7c00h
+		CALL	SUB_1		;Выведем сообщение на экран	
+		XOR	AX,AX		
+		INT	16H		;Останов до нажатия клавиши...
+
+		POP	SI
+		POP	DS
+		POP	WORD PTR [SI]	; восстановить адрес базовой таб. диска
+		POP	WORD PTR [SI+2]
+		INT	19H		;Перезагрузка !!!	
+LOC_5:
+		POP	AX		; очистка стека
+		POP	AX
+		POP	AX
+		JMP	SHORT ERROR_		
+;После того как необходимые записи найдены что нужно сделать? Правильно!
+;Считать файлы в память и передать им управление...
+
+LOC_6:
+		MOV	AX,[BX+1AH]	; начальный номер кластера
+		DEC	AX
+		DEC	AX
+		MOV	BL,DS:[@@ClusterSize][7c00h]
+		XOR	BH,BH		
+		MUL	BX			
+		ADD	AX,DS:[7c49h]
+		ADC	DX,DS:[7c4bh]
+					; DX:AX - первый сектор файла
+		MOV	BX,700H		; сюда считывается IO.SYS
+		MOV	CX,3		; читаем три сектора
+
+LOCLOOP_7:
+		PUSH	AX
+		PUSH	DX
+		PUSH	CX
+		CALL	GET_PHYS_ADDR		
+		JC	LOC_5		; ошибка
+		MOV	AL,1
+		CALL	READ_SEC			
+		POP	CX
+		POP	DX
+		POP	AX
+  		JC	ERROR_		
+ 		ADD	AX,1
+ 		ADC	DX,0
+ 		ADD	BX,DS:[@@SectorSize][7c00h]
+		LOOP	LOCLOOP_7		
+  
+				; подготовка к передаче управления IO.SYS
+
+ 		MOV	CH,DS:[@@MediaByte][7c00h]	; Media Descr. Byte
+ 		MOV	DL,DS:[@@DiskAddress][7c00h]
+ 		MOV	BX,DS:[7c49h]	
+ 		MOV	AX,DS:[7c4bh]	
+
+;*		JMP	FAR PTR LOC_1		;*(0070:0000)
+		DB	0EAH, 00H, 00H, 70H, 00H	; переходит на IO.SYS
+  
+  
+;▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+;			       SUBROUTINE
+;		Вывод на экран сообщения об ошибке
+;▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+  
+SUB_1		PROC	NEAR
+LOC_8:						
+		LODSB				; String [si] to al
+		OR	AL,AL			
+		JZ	LOC_RET_10		
+		MOV	AH,0EH
+		MOV	BX,7
+		INT	10H			; Video display   ah=functn 0Eh
+						; write char al, teletype mode
+		JMP	SHORT LOC_8		
+ 
+;▀▀▀▀  ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+
+GET_PHYS_ADDR:	      ; перевод общего числа секторов в head-track-cylinder
+
+		CMP	DX,DS:[@@TrackSectors][7c00h]	 ; ?????????????????
+		JAE	LOC_9			
+		DIV	WORD PTR DS:[@@TrackSectors][7c00h] 
+		INC	DL		; остаток секторов от деления 
+					; +1 - сектора начинаются с 1
+		MOV	DS:[7c4fh],DL	
+		XOR	DX,DX
+					; DX:AX = Число дорожек
+		DIV	WORD PTR DS:[@@Heads][7c00h]	
+		MOV	DS:[@@WorkHead][7c00h],DL	; остаток дорожек
+		MOV	DS:[7c4dh],AX			; головки
+		CLC				
+		RETN
+LOC_9:				
+		STC				
+  
+LOC_RET_10:			
+		RETN
+SUB_1		ENDP
+  
+
+;▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+;			       SUBROUTINE
+;
+;			Чтение секторов с диска   
+;▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+  
+READ_SEC		PROC	NEAR
+		MOV	AH,2
+		MOV	DX,DS:[7c4dh]		
+		MOV	CL,6
+		SHL	DH,CL			
+		OR	DH,DS:[7c4fh]
+		MOV	CX,DX
+		XCHG	CH,CL
+		MOV	DL,DS:[@@DiskAddress][7c00h]	
+		MOV	DH,DS:[@@WorkHead][7c00h]	
+		INT	13H			
+		RETN
+READ_SEC		ENDP
+  
+message		DB	0DH, 0AH, 'Non-System disk or disk error'
+		DB	0DH, 0AH, 'Replace and press any key when ready'
+		DB	0DH, 0AH
+		DB	0
+patt		DB	'IO      SYSMSDOS   SYS'
+		DB	 00H, 00H, 55H,0AAH
+SEG_A		ENDS
+		END	START
